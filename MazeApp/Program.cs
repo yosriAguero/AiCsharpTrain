@@ -57,8 +57,10 @@ void setupReward(int[,] maze,int wallValue,int floorValue, int goalValue)
     {
         int mazeRows = maze.GetLength(0);
         int mazeColumns = maze.GetLength(1);
-        qvalues = torch.zeros(mazeRows, mazeColumns, 4);
+    // tableau à trois dimensions
+        qvalues = torch.zeros(mazeRows, mazeColumns, 4);//on va créer une armoire avec des casiers
     }
+   // Terminal states, un agent doit s'arreter quand il échou ou arriver à destination
 
     bool hasHitWallOrEndOfMaze(int currentRow, int currentColumn, int floorValue)
     {
@@ -68,8 +70,23 @@ void setupReward(int[,] maze,int wallValue,int floorValue, int goalValue)
     long DetermineNextAction(int currentRow, int currentColumn, float epsilon)
 {
     Random random = new Random();
+    //Retourne un nombre au hasard entre 0.0 et 1.0
+    //Exemples : 0.13, 0.82, 0.55
     double randomBetween0and1 = random.NextDouble();
+    //Exploiatation torch.argmax(qvalues[currentRow, currentColumn]).item<long>()
+    //epsilon = probabilité d’EXPLOITER
+    //epsilon = probabilité de choisir la meilleure action (exploitation)
+    //ici epsilon 0.95 on pousse souvent à exploiter
+    //Dans ce momemnt ils sont tous à zero car il n'a rien appris encore 
+   // qvalues[11, 5] = [0, 0, 0, 0]
+    var t = qvalues[currentRow, currentColumn];
+    var t2 = torch.argmax(qvalues[currentRow, currentColumn]).item<long>();
     long nextAction = randomBetween0and1 < epsilon ? torch.argmax(qvalues[currentRow, currentColumn]).item<long>() : random.Next(4);
+
+    float up = t[0].item<float>();
+    float down = t[1].item<float>();
+    float left = t[2].item<float>();
+    float right = t[3].item<float>();
     return nextAction;
 }
 (int, int) moveOneSpace(int[,] maze, int currentRow, int currentColumn, long currentAction)
@@ -201,7 +218,15 @@ List<int[]> navigateMaze(int[,] maze, int startRow, int startColumn, int floorVa
 
     return path;
 }
+//0.95 = 95 % intelligence / 5 % hasard
 
+//Bon pour un petit maze
+
+//Bon pour l’apprentissage visuel
+
+//Pas trop lent
+
+//Pas figé
 const float EPSILON = 0.95f;
 const float DISCOUNT_FACTOR = 0.8f;
 const float LEARNING_RATE = 0.9f;
